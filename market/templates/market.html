@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}
+Market Page
+{% endblock %}
+{% block content %}
+
+<style>
+    .item-card {
+        background-color: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 10px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+    }
+    .item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        border-color: #4CAF50;
+    }
+    .item-price-tag {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #4CAF50;
+    }
+    .section-heading {
+        border-left: 4px solid #4CAF50;
+        padding-left: 12px;
+        margin-bottom: 5px;
+    }
+    .owned-card {
+        background-color: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 10px;
+        transition: transform 0.2s ease;
+    }
+    .owned-card:hover {
+        transform: translateY(-3px);
+        border-color: #dc3545;
+    }
+    .empty-state {
+        color: #888;
+        font-style: italic;
+        text-align: center;
+        padding: 30px 0;
+    }
+</style>
+
+<div class="container-fluid" style="margin-top: 30px; padding: 0 30px;">
+    <div class="row">
+        <!-- Market Items Section -->
+        <div class="col-lg-8 col-md-7">
+            <h2 class="section-heading">Available Items on the Market</h2>
+            <p class="text-muted" style="margin-left: 16px;">Click on an item to view details or purchase it</p>
+
+            <div class="row" style="margin-top: 20px;">
+                {% for item in items %}
+                    {% include 'includes/items_modals.html' %}
+                    <div class="col-md-6 mb-4">
+                        <div class="item-card p-3">
+                            <img src="{{ url_for('static', filename='item_pics/' + item.image_file) }}"
+                               class="img-fluid mb-2"
+                               style="height: 150px; object-fit: contain; width: 100%; border-radius: 6px; background-color: #1a1a1a;"
+                               alt="{{ item.name }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="mb-1">{{ item.name }}</h5>
+                                <span class="badge badge-secondary">#{{ item.id }}</span>
+                            </div>
+                            <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                                Barcode: {{ item.barcode }}
+                            </p>
+                            <p class="item-price-tag"><span data-price="{{ item.id }}">{{ item.price }}</span>$</p>
+                            <div class="d-flex" style="gap: 8px;">
+                                <button class="btn btn-outline-info btn-sm flex-fill"
+                                        data-toggle="modal" data-target="#Modal-MoreInfo-{{ item.id }}">
+                                    More Info
+                                </button>
+                                <button class="btn btn-success btn-sm flex-fill"
+                                        data-toggle="modal" data-target="#Modal-PurchaseConfirm-{{ item.id }}">
+                                    Purchase
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-state">No items currently available on the market.</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Owned Items Section -->
+        <div class="col-lg-4 col-md-5" style="border-left: 1px solid #3a3a3a;">
+            <h2 class="section-heading">Owned Items</h2>
+            <p class="text-muted" style="margin-left: 16px;">Click sell to put an item back on the market</p>
+
+            <div class="row" style="margin-top: 20px;">
+                {% for owned_item in owned_items %}
+                    {% include 'includes/owned_items_modals.html' %}
+                    <div class="col-12 mb-3">
+                        <div class="owned-card text-center p-3">
+                            <h5 class="mb-2">{{ owned_item.name }}</h5>
+                            <p class="item-price-tag mb-0"><span data-sell="{{ owned_item.id }}">{{ owned_item.sell_price }}</span>$</p>
+                            <p class="text-muted mb-2" style="font-size: 0.8rem;">Sell value (market: <span data-price="{{ owned_item.id }}">{{ owned_item.price }}</span>$)</p>
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-block"
+                                    data-toggle="modal" data-target="#Modal-SellingConfirm-{{ owned_item.id }}">
+                                Sell this Item
+                            </button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-state">You don't own any items yet.</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  function updatePrices() {
+    fetch('/api/prices')
+      .then(r => r.json())
+      .then(data => {
+        for (const id in data) {
+          document.querySelectorAll('[data-price="' + id + '"]').forEach(el => el.textContent = data[id].price);
+          document.querySelectorAll('[data-sell="' + id + '"]').forEach(el => el.textContent = data[id].sell_price);
+        }
+      })
+      .catch(() => {});   // login expire ya network error pe chupchap ignore
+  }
+  setInterval(updatePrices, 10000);   // har 10 second
+</script>
+{% endblock %}

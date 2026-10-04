@@ -1,0 +1,5 @@
+   instance/market.db
+   market.db
+   __pycache__/
+   *.pyc
+   venv/
