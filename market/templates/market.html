@@ -124,17 +124,26 @@ Market Page
 </div>
 
 <script>
+  let knownOwners = null;
+
   function updatePrices() {
     fetch('/api/prices')
       .then(r => r.json())
       .then(data => {
-        for (const id in data) {
-          document.querySelectorAll('[data-price="' + id + '"]').forEach(el => el.textContent = data[id].price);
-          document.querySelectorAll('[data-sell="' + id + '"]').forEach(el => el.textContent = data[id].sell_price);
+        for (const id in data.prices) {
+          document.querySelectorAll('[data-price="' + id + '"]').forEach(el => el.textContent = data.prices[id].price);
+          document.querySelectorAll('[data-sell="' + id + '"]').forEach(el => el.textContent = data.prices[id].sell_price);
+        }
+        const owners = JSON.stringify(data.owners);
+        if (knownOwners === null) {
+          knownOwners = owners;    // page khulte hi current halat yaad rakho
+        } else if (owners !== knownOwners && !document.querySelector('.modal.show')) {
+          location.reload();       // kisi item ka maalik badla, page refresh
         }
       })
       .catch(() => {});   // login expire ya network error pe chupchap ignore
   }
-  setInterval(updatePrices, 30000);   // har 30 second (testing mein 10000 kar sakte ho)
+  updatePrices();
+  setInterval(updatePrices, 30000);   // har 30 second
 </script>
 {% endblock %}

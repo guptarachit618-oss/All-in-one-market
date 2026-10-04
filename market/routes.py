@@ -57,7 +57,7 @@ def market_page():
                 payout = s_item_object.sell(current_user)
                 flash(f"Congratulations! You sold {s_item_object.name} for {payout}$ back to market. Your new budget: {current_user.prettier_budget}. New market price: {s_item_object.price}$", category='success')
             else:
-                flash("Something went wrong", category='danger')
+                flash("You can't sell this item because you don't own it. Make sure you're logged in to the right account.", category='danger')
 
         return redirect(url_for('market_page'))
 
@@ -76,7 +76,11 @@ def market_page():
 @login_required
 def api_prices():
     fluctuate_prices()
-    return {str(i.id): {'price': i.price, 'sell_price': i.sell_price} for i in Item.query.all()}
+    items = Item.query.all()
+    return {
+        'prices': {str(i.id): {'price': i.price, 'sell_price': i.sell_price} for i in items},
+        'owners': {str(i.id): i.owner for i in items}
+    }
 
 
 @app.route('/register', methods=['GET', 'POST'])
