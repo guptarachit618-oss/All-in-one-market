@@ -54,6 +54,11 @@
         
       </div>
     </nav>
+    <!-- Site-wide notice -->
+    <div class="alert alert-info text-center mb-0 rounded-0 py-2" role="alert">
+        ℹ️ <strong>Note:</strong> Every item is one-of-a-kind. Once someone buys an item, it shows as <strong>Sold out</strong> until the buyer sells it back to the market.
+    </div>
+    
     {% with messages=get_flashed_messages(with_categories=true) %}
        {% if messages %}
           {% for category, message in messages %}  
