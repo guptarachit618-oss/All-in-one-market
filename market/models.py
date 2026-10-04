@@ -36,7 +36,7 @@ class User(db.Model, UserMixin):
         return bcrypt.check_password_hash(self.password_hash, attempted_password)
 
     def can_purchase(self, item_obj):
-        return self.budget >= item_obj.price
+        return self.budget >= item_obj.price and item_obj.owner is None
 
     def can_sell(self, item_obj):
         return item_obj in self.items

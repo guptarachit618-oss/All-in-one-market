@@ -9,17 +9,20 @@ import time
 
 last_tick = time.time()
 
+TICK_SECONDS = 300   # live ke liye 300 (5 min); testing mein 10 kar sakte ho
+MAX_MOVE = 0.03      # har step mein max +-3%
+
 
 def fluctuate_prices():
-    """Har 10 second (testing) / 5 minute mein sab items ka price thoda upar-neeche."""
+    """Har TICK_SECONDS mein sab items ka price thoda upar ya neeche."""
     global last_tick
-    ticks = int((time.time() - last_tick) // 7)   # testing ke liye 10; final mein 300 (5 min)
+    ticks = int((time.time() - last_tick) // TICK_SECONDS)
     if ticks < 1:
         return
     last_tick = time.time()
     for item in Item.query.all():
         for _ in range(min(ticks, 12)):
-            item.price = max(50, round(item.price * (1 + random.uniform(-0.05, 0.06))))
+            item.price = max(50, round(item.price * (1 + random.uniform(-MAX_MOVE, MAX_MOVE))))
     db.session.commit()
 
 
@@ -60,7 +63,10 @@ def market_page():
 
     # GET request
     fluctuate_prices()
-    items = Item.query.filter_by(owner=None)
+    items = (Item.query
+             .filter(db.or_(Item.owner.is_(None), Item.owner != current_user.id))
+             .order_by(Item.owner.is_(None).desc(), Item.id)
+             .all())
     owned_items = Item.query.filter_by(owner=current_user.id)
     return render_template('market.html', items=items, purchase_form=purchase_form,
                            owned_items=owned_items, selling_form=selling_form)

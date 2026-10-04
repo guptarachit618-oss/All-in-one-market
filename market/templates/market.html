@@ -68,15 +68,20 @@ Market Page
                             <p class="text-muted mb-2" style="font-size: 0.85rem;">
                                 Barcode: {{ item.barcode }}
                             </p>
+
+                            {% if item.owner %}
+                                <span class="badge badge-danger mb-2">Owned by {{ item.owned_user.username }}</span>
+                            {% endif %}
+
                             <p class="item-price-tag"><span data-price="{{ item.id }}">{{ item.price }}</span>$</p>
                             <div class="d-flex" style="gap: 8px;">
                                 <button class="btn btn-outline-info btn-sm flex-fill"
                                         data-toggle="modal" data-target="#Modal-MoreInfo-{{ item.id }}">
                                     More Info
                                 </button>
-                                <button class="btn btn-success btn-sm flex-fill"
+                                <button class="btn btn-success btn-sm flex-fill" {% if item.owner %}disabled{% endif %}
                                         data-toggle="modal" data-target="#Modal-PurchaseConfirm-{{ item.id }}">
-                                    Purchase
+                                    {% if item.owner %}Sold out{% else %}Purchase{% endif %}
                                 </button>
                             </div>
                         </div>
@@ -130,6 +135,6 @@ Market Page
       })
       .catch(() => {});   // login expire ya network error pe chupchap ignore
   }
-  setInterval(updatePrices, 10000);   // har 10 second
+  setInterval(updatePrices, 30000);   // har 30 second (testing mein 10000 kar sakte ho)
 </script>
 {% endblock %}
